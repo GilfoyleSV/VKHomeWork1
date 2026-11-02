@@ -40,11 +40,8 @@ fun NumberGridScreen(
     viewModel: NumberGridViewModel = viewModel(),
 ) {
     val itemCount by viewModel.itemCount.collectAsState()
-    val columnCount = integerResource(R.integer.grid_column_count)
     val gridPadding = dimensionResource(R.dimen.grid_padding)
     val gridSpacing = dimensionResource(R.dimen.grid_spacing)
-    val bottomContentPadding = dimensionResource(R.dimen.grid_bottom_content_padding)
-    val fabMargin = dimensionResource(R.dimen.fab_margin)
 
     Scaffold(
         floatingActionButton = {
@@ -52,7 +49,7 @@ fun NumberGridScreen(
                 onClick = { viewModel.addItem() },
                 containerColor = colorResource(R.color.fab_background),
                 contentColor = colorResource(R.color.fab_icon_tint),
-                modifier = Modifier.padding(fabMargin)
+                modifier = Modifier.padding(dimensionResource(R.dimen.fab_margin)),
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -62,25 +59,21 @@ fun NumberGridScreen(
         }
     ) { innerPadding ->
         val layoutDirection = LocalLayoutDirection.current
-        val startPadding = innerPadding.calculateStartPadding(layoutDirection) + gridPadding
-        val endPadding = innerPadding.calculateEndPadding(layoutDirection) + gridPadding
-        val topPadding = innerPadding.calculateTopPadding() + gridPadding
-        val bottomPadding = innerPadding.calculateBottomPadding() + bottomContentPadding
 
         LazyVerticalGrid(
-            columns = GridCells.Fixed(columnCount),
+            columns = GridCells.Fixed(integerResource(R.integer.grid_column_count)),
             contentPadding = PaddingValues(
-                start = startPadding,
-                top = topPadding,
-                end = endPadding,
-                bottom = bottomPadding
+                start = innerPadding.calculateStartPadding(layoutDirection) + gridPadding,
+                top = innerPadding.calculateTopPadding() + gridPadding,
+                end = innerPadding.calculateEndPadding(layoutDirection) + gridPadding,
+                bottom = innerPadding.calculateBottomPadding() + dimensionResource(R.dimen.grid_bottom_content_padding)
             ),
             horizontalArrangement = Arrangement.spacedBy(gridSpacing),
             verticalArrangement = Arrangement.spacedBy(gridSpacing),
             modifier = Modifier.fillMaxSize()
         ) {
-            items(count = itemCount, key = { index -> index }) { index ->
-                SquareNumberCard(number = index)
+            items(count = itemCount, key = { it }) { number ->
+                SquareNumberCard(number = number)
             }
         }
     }
@@ -91,32 +84,18 @@ fun SquareNumberCard(
     number: Int,
     modifier: Modifier = Modifier,
 ) {
-    val evenDivisor = integerResource(R.integer.even_divisor)
-    val evenRemainder = integerResource(R.integer.even_remainder)
-    val isEven = (number % evenDivisor) == evenRemainder
-
-    val backgroundColor = if (isEven) {
-        colorResource(R.color.item_even_background)
-    } else {
-        colorResource(R.color.item_odd_background)
-    }
-
-    val num = integerResource(R.integer.aspect_ratio_num).toFloat()
-    val den = integerResource(R.integer.aspect_ratio_den).toFloat()
-    val aspectRatio = num / den
-
-    val cornerRadius = dimensionResource(R.dimen.card_corner_radius)
-    val elevation = dimensionResource(R.dimen.card_elevation)
+    val backgroundColor = colorResource(
+        if ((number % 2) == 0) R.color.item_even_background else R.color.item_odd_background
+    )
     val textSizeSp = with(LocalDensity.current) { dimensionResource(R.dimen.item_text_size).toSp() }
-    val textColor = colorResource(R.color.item_text_color)
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(aspectRatio),
-        shape = RoundedCornerShape(cornerRadius),
+            .aspectRatio(1f),
+        shape = RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius)),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = elevation)
+        elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(R.dimen.card_elevation))
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -124,7 +103,7 @@ fun SquareNumberCard(
         ) {
             Text(
                 text = number.toString(),
-                color = textColor,
+                color = colorResource(R.color.item_text_color),
                 fontSize = textSizeSp,
                 fontWeight = FontWeight.Bold
             )
